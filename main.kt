@@ -1,86 +1,93 @@
-class PhanSo(var tu: Int, var mau: Int) {
-    // Nhập phân số
-    fun nhap() {
-        do {
-            print("Nhập tử số: ")
-            tu = readln().toInt()
-            print("Nhập mẫu số: ")
-            mau = readln().toInt()
-            if (mau == 0) {
-                println("Mẫu số không được bằng 0, nhập lại!")
-            }
-        } while (mau == 0)
-    }
-    // Hiển thi phân số
-    fun xuat() {
-        println("$tu/$mau")
-    }
-    // Tối giản phân số
-    fun toiGian() {
-        val gcd = ucln(Math.abs(tu), Math.abs(mau))
-        tu /= gcd
-        mau /= gcd
-        // Đưa mẫu số về dương
-        if (mau < 0) {
-            tu = -tu
-            mau = -mau
+data class PhanSo(var tuSo: Int, var mauSo: Int){
+    init {
+        if (mauSo < 0) {
+            tuSo = -tuSo
+            mauSo = -mauSo
         }
     }
 
-    // So sánh phân số
-    fun soSanh(ps: PhanSo): Int {
-        val a = tu * ps.mau
-        val b = ps.tu * mau
-        return when {
-            a < b -> -1
-            a == b -> 0
-            else -> 1
+    fun inPhanSo(){
+        println("$tuSo / $mauSo")
+    }
+
+    fun toiGianPhanSo(){
+        val ucln = ucln(tuSo, mauSo)
+        tuSo /= ucln
+        mauSo /= ucln
+        if (mauSo < 0) {
+            tuSo = -tuSo
+            mauSo = -mauSo
         }
     }
-    // Tính tổng với một phân số khác
-    fun cong(ps: PhanSo): PhanSo {
-        val tuMoi = tu * ps.mau + ps.tu * mau
-        val mauMoi = mau * ps.mau
-        val kq = PhanSo(tuMoi, mauMoi)
-        kq.toiGian()
-        return kq
+
+    fun soSanh(a: PhanSo) : Int{
+        val compare = this.tuSo * a.mauSo - a.tuSo * this.mauSo
+        return when {
+            compare > 0 -> 1
+            compare < 0 -> -1
+            else -> 0
+        }
     }
-    // Hàm tính ước chung lớn nhất
-    private fun ucln(a: Int, b: Int): Int {
-        return if (b == 0) a else ucln(b, a % b)
+
+    fun cong(a: PhanSo) : PhanSo{
+        var bcnn = bcnn(this.mauSo, a.mauSo)
+        var tu1 = bcnn / this.mauSo * this.tuSo
+        var tu2 = bcnn / a.mauSo * a.tuSo
+        return PhanSo(tu1 + tu2, bcnn)
     }
 }
+
+fun ucln(so1: Int, so2: Int) : Int{
+    var a = so1
+    var b = so2
+    while (a != b){
+        if ( a > b) a -= b
+        else b -= a
+    }
+    return a
+}
+
+fun bcnn(so1: Int, so2: Int) : Int{
+    var a = so1
+    var b = so2
+    return a * b / ucln(a, b)
+}
 fun main() {
-    print("Nhập số lượng phân số: ")
+    println("Nhập số lượng phân số: ")
     val n = readln().toInt()
-    val arr = Array(n) { PhanSo(1, 1) }
-    // Nhập mảng phân số
-    for (i in arr.indices) {
-        println("Nhập phân số thứ ${i + 1}:")
-        arr[i].nhap()
-    }
-    println("\nMảng phân số vừa nhập:")
-    arr.forEach { it.xuat() }
-    println("\nMảng phân số sau khi tối giản:")
-    arr.forEach { it.toiGian(); it.xuat() }
-    // Tính tổng
-    var tong = PhanSo(0, 1)
-    for (ps in arr) {
-        tong = tong.cong(ps)
-    }
-    println("\nTổng các phân số:")
-    tong.xuat()
-    // Tìm phan so lớn nhất
-    var max = arr[0]
-    for (ps in arr) {
-        if (ps.soSanh(max) == 1) {
-            max = ps
+    var mangPhanSo = Array(n) { i ->
+        println("Nhập phân số thứ ${i+1}")
+        println("Nhập tử số: ")
+        var tuSo = readln().toInt()
+        while (tuSo == 0){
+            println("Nhập lại mẫu số: ")
+            tuSo = readln().toInt()
         }
+        println("Nhập mẫu số: ")
+        var mauSo = readln().toInt()
+        while (mauSo == 0){
+            println("Nhập lại mẫu số: ")
+            mauSo = readln().toInt()
+        }
+        PhanSo(tuSo, mauSo)
     }
-    print("\nPhân số lớn nhất: ")
-    max.xuat()
-    // Sắp xếp theo thu tu giảm dần
-    arr.sortWith { a, b -> b.soSanh(a) }
-    println("\nMảng phân số sau khi sắp xếp giảm dần:")
-    arr.forEach { it.xuat() }
+
+    println("In mảng phân số: ")
+    mangPhanSo.forEach { it.inPhanSo() }
+
+    println("In mảng phân số sau khi tối giản: ")
+    mangPhanSo.forEach { it.toiGianPhanSo() }
+    mangPhanSo.forEach { it.inPhanSo() }
+
+    var tong = PhanSo(0 ,1)
+    mangPhanSo.forEach { tong = tong.cong(it) }
+    println("Tổng các phân số: ")
+    tong.inPhanSo()
+
+    var mangSapXep = mangPhanSo.sortedWith { ps1, ps2 -> ps2.soSanh(ps1) }
+    println("Phân số lớn nhất: ")
+    mangSapXep[0].inPhanSo()
+
+    println("In mảng phân số đã sắp xếp giảm dần: ")
+    mangSapXep.forEach { it.inPhanSo() }
 }
